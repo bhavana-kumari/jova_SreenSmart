@@ -1,0 +1,75 @@
+@import "tailwindcss";
+
+/*
+  ScreenSmart design tokens
+  Professional ATS blue — Greenhouse / Lever inspired, not generic purple AI UI.
+*/
+@theme {
+  --font-display: "Sora", system-ui, sans-serif;
+  --font-sans: "Source Sans 3", system-ui, sans-serif;
+
+  --color-brand-950: #062#if;
+  --color-brand-900: #083a68;
+  --color-brand-800: #0b4f8c;
+  --color-brand-700: #0e63b0;
+  --color-brand-600: #1a7ad4;
+  --color-brand-500: #2f8fe0;
+  --color-brand-400: #5bbeff;
+  --color-brand-100: #e8f3ff;
+  --color-brand-50: #f3f8fc;
+
+  --color-ink: #0f172a;
+  --color-muted: #64748b;
+  --color-surface: #ffffff;
+  --color-canvas: #f0f5fa;
+
+  --color-fit-strong: #059669;
+  --color-fit-strong-bg: #ecfdf5;
+  --color-fit-possible: #d97706;
+  --color-fit-possible-bg: #fffbeb;
+  --color-fit-not: #dc2626;
+  --color-fit-not-bg: #fef2f2;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  min-height: 100%;
+}
+
+body {
+  margin: 0;
+  font-family: var(--font-sans);
+  color: var(--color-ink);
+  background: var(--color-canvas);
+  -webkit-font-smoothing: antialiased;
+}
+
+h1,
+h2,
+h3,
+h4 {
+  font-family: var(--font-display);
+  letter-spacing: -0.02em;
+}
+
+/* Soft grid atmosphere used on landing / app shell */
+.bg-atmosphere {
+  background-color: #071a2e;
+  background-image:
+    radial-gradient(ellipse 80% 60% at 20% 10%, rgba(26, 122, 212, 0.45), transparent 55%),
+    radial-gradient(ellipse 70% 50% at 90% 20%, rgba(91, 190, 255, 0.22), transparent 50%),
+    radial-gradient(ellipse 60% 40% at 50% 100%, rgba(8, 58, 104, 0.7), transparent 55%),
+    linear-gradient(180deg, #071a2e 0%, #0b4f8c 100%);
+}
+
+.bg-grid-fade {
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.04) 1px, transparent 1px);
+  background-size: 48px 48px;
+}

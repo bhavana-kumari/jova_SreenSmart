@@ -3,10 +3,10 @@
  * ---------
  * Entry point for the ScreenSmart AI Screening & Scoring Module.
  * Why this exists: Boots Express, mounts routes, and starts listening.
- * This module does NOT handle auth, parsing, frontend, DB, or calendar.
  */
 
 const express = require("express");
+const multer = require("multer");
 const { env, validateEnv } = require("./config/env");
 const screenRoutes = require("./routes/screenRoutes");
 
@@ -15,8 +15,11 @@ validateEnv();
 
 const app = express();
 
-// Parse incoming JSON request bodies
+// Parse incoming JSON request bodies (used by /api/screen/json)
 app.use(express.json({ limit: "1mb" }));
+
+// Parse urlencoded fields that may appear alongside multipart text fields
+app.use(express.urlencoded({ extended: true }));
 
 /**
  * Health check — teammates / load balancers can verify the service is up.
@@ -41,19 +44,39 @@ app.use((req, res) => {
   });
 });
 
-// Global error handler (Express 4 catches sync errors thrown in middleware)
+/**
+ * Global error handler — including Multer upload errors.
+ * Why: Unsupported file types / size limits should return 400, not 500.
+ */
 app.use((err, req, res, next) => {
+  if (err instanceof multer.MulterError) {
+    console.error("[upload] Multer error:", err.message);
+    return res.status(400).json({
+      success: false,
+      error: `Upload error: ${err.message}`,
+    });
+  }
+
+  // fileFilter rejection from middleware/upload.js
+  if (err && err.message && /Unsupported file type/i.test(err.message)) {
+    return res.status(400).json({
+      success: false,
+      error: err.message,
+    });
+  }
+
   console.error("[server] Unhandled error:", err);
   res.status(500).json({
     success: false,
-    error: "Internal server error.",
+    error: err.message || "Internal server error.",
   });
 });
 
 // Start HTTP server
 app.listen(env.PORT, () => {
   console.log(`ScreenSmart AI Screening module running on port ${env.PORT}`);
-  console.log(`POST http://localhost:${env.PORT}/api/screen`);
+  console.log(`POST http://localhost:${env.PORT}/api/screen          (multipart PDF/DOCX)`);
+  console.log(`POST http://localhost:${env.PORT}/api/screen/json     (legacy JSON)`);
 });
 
 module.exports = app;
