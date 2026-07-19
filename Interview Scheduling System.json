@@ -1,0 +1,254 @@
+{
+  "name": "Interview Scheduling System",
+  "nodes": [
+    {
+      "parameters": {
+        "jsCode": "// Loop over input items and add a new field called 'myNewField' to the JSON of each one\nreturn [\n  {\n    json: {\n      name: $input.first().json.name,\n      email: $input.first().json.email,\n      slots: [\n        \"20 July, 11:00 AM\",\n        \"20 July, 3:00 PM\",\n        \"21 July, 11:00 AM\"\n      ]\n    }\n  }\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        416,
+        0
+      ],
+      "id": "370b6cf7-e24a-4ea3-af0b-b4fc62afae3a",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $json.email }} ",
+        "subject": "Interview Invitation",
+        "message": "=Dear {{ $json.name }},\n\nThank you for applying and for your time throughout our selection process. We are pleased to inform you that you have been shortlisted for the next round — an interview.\n\nPlease find below the available time slots for your interview:\n\n1. 20th July, 11:00 AM\n2. 20th July, 3:00 PM\n3. 21st July, 11:00 AM\n\nKindly reply to this email with your preferred slot number at the earliest, so we can confirm and schedule your interview accordingly.\n\nWe look forward to speaking with you.\n\nBest regards,\nRecruitment Team",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        624,
+        0
+      ],
+      "id": "5cac4588-b089-4885-95a9-d865131a843f",
+      "name": "Send a message",
+      "webhookId": "d2279a11-776e-4263-8824-30f6968509cc",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "BSHedGV9kFGfd30k",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            },
+            {
+              "hour": 0,
+              "minute": 1
+            }
+          ]
+        },
+        "filters": {}
+      },
+      "type": "n8n-nodes-base.gmailTrigger",
+      "typeVersion": 1.4,
+      "position": [
+        688,
+        272
+      ],
+      "id": "4a05cd8e-cd4d-45e5-bf80-c0339cbe8ed5",
+      "name": "Gmail Trigger",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "mxL6rykC69EBLoEO",
+          "name": "Gmail account 3"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const rawFrom = $input.first().json.From || \"\";\nconst replyText = $input.first().json.snippet || $input.first().json.text || \"\";\n\n// Email ko \"<>\" ke andar se nikalo\nconst emailMatch = rawFrom.match(/<(.+)>/);\nconst candidateEmail = emailMatch ? emailMatch[1] : rawFrom;\n\n// Reply mein se slot number dhoondo\nconst numMatch = replyText.match(/[1-3]/);\nconst slotNumber = numMatch ? parseInt(numMatch[0]) : 1;\n\nconst slots = [\n  \"2026-07-20T11:00:00\",\n  \"2026-07-20T15:00:00\",\n  \"2026-07-21T11:00:00\"\n];\n\nreturn [\n  {\n    json: {\n      candidateEmail: candidateEmail,\n      selectedSlot: slots[slotNumber - 1]\n    }\n  }\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        896,
+        272
+      ],
+      "id": "970dc299-13a2-4e72-8c97-e3fdeaf0ece6",
+      "name": "Code in JavaScript1"
+    },
+    {
+      "parameters": {
+        "calendar": {
+          "__rl": true,
+          "value": "wwwishantkumar9@gmail.com",
+          "mode": "list",
+          "cachedResultName": "wwwishantkumar9@gmail.com"
+        },
+        "start": "={{ $json.selectedSlot }}",
+        "end": "={{ DateTime.fromISO($json.selectedSlot).plus({minutes: 30}).toISO() }}",
+        "additionalFields": {
+          "attendees": [
+            "={{ $json.candidateEmail }}"
+          ],
+          "summary": "=Interview with {{ $json.candidateEmail }}"
+        }
+      },
+      "type": "n8n-nodes-base.googleCalendar",
+      "typeVersion": 1.3,
+      "position": [
+        1104,
+        272
+      ],
+      "id": "cefd6e7a-6588-4d9d-b9de-f318e71a4fa4",
+      "name": "Create an event",
+      "credentials": {
+        "googleCalendarOAuth2Api": {
+          "id": "9qPtJyzZ2ZI3ufa7",
+          "name": "Google Calendar account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $('Code in JavaScript1').item.json.candidateEmail }}",
+        "subject": "Interview Confirmed",
+        "message": "Dear Candidate,  Your interview has been confirmed. Please check your calendar invite for the exact date, time, and meeting details.  We look forward to speaking with you.  Best regards, Recruitment Team",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        1312,
+        272
+      ],
+      "id": "de56b08b-ef2f-47bb-8823-7bcf0e56856f",
+      "name": "Send a message1",
+      "webhookId": "28d3ecf6-d8b3-4b11-8f4a-4e2b3da9a0b7",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "JfblAODAFo7sS5rL",
+          "name": "Gmail account 4"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "shortlist-candidate",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        1360,
+        -32
+      ],
+      "id": "2053e4ee-03da-4a49-82ae-f9245deb8b4e",
+      "name": "Webhook",
+      "webhookId": "0addef4e-126f-4d0a-8566-c857a7f901bc"
+    },
+    {
+      "parameters": {
+        "jsCode": "const data = $input.first().json.body;\n\nreturn [\n  {\n    json: {\n      name: data.name,\n      email: data.email,\n      fit: data.fit,\n      score: data.score\n    }\n  }\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1568,
+        -32
+      ],
+      "id": "ee322ab8-e927-45f8-be17-8738fd51c6e2",
+      "name": "Code in JavaScript2"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gmail Trigger": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript1": {
+      "main": [
+        [
+          {
+            "node": "Create an event",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create an event": {
+      "main": [
+        [
+          {
+            "node": "Send a message1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript2": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false,
+    "timeSavedMode": "fixed",
+    "callerPolicy": "workflowsFromSameOwner",
+    "executionTimeout": -1
+  },
+  "versionId": "7de5780a-d290-44f3-a3fb-ea34a332b8a7",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "1f04df53aff4dc796896069de5db5cf03d4bd8fe1cb4a4f96461ea43e4659d6d"
+  },
+  "nodeGroups": [],
+  "id": "fgWFHYg0Jb28QSMD",
+  "tags": []
+}
