@@ -1,0 +1,18 @@
+{
+  "name": "screensmart-ai-screening",
+  "version": "1.0.0",
+  "description": "ScreenSmart - AI Screening & Scoring Module (Team Member 2)",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js"
+  },
+  "keywords": ["screensmart", "resume-screening", "gemini", "hackathon"],
+  "author": "Team Member 2",
+  "license": "MIT",
+  "dependencies": {
+    "axios": "^1.7.9",
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2"
+  }
+}
